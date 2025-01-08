@@ -1,0 +1,58 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+div.game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 5px;
+    justify-content: center;
+    margin: 20px auto;
+}
+
+.cell {
+    width: 100px;
+    height: 100px;
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+.cell.taken {
+    cursor: not-allowed;
+}
+
+/* Style for X */
+.cell.x {
+    color: #ff4d4d;  /* Red color for X */
+    font-weight: bold;
+    text-shadow: 2px 2px 5px rgba(255, 0, 0, 0.5);  /* Adding a red glow effect */
+}
+
+/* Style for O */
+.cell.o {
+    color: #4d94ff;  /* Blue color for O */
+    font-weight: bold;
+    text-shadow: 2px 2px 5px rgba(0, 0, 255, 0.5);  /* Adding a blue glow effect */
+}
+
+#message {
+    margin-top: 20px;
+    font-size: 1.2rem;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+}
