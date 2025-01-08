@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Tic Tac Toe</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,6 +12,13 @@
         <button id="choose-x">Play as X</button>
         <button id="choose-o">Play as O</button>
     </div>
+
+    <div id="game-mode-selection">
+        <p>Select game mode:</p>
+        <button id="pvp">Player vs Player</button>
+        <button id="pvb">Player vs Bot</button>
+    </div>
+
     <div class="game-board">
         <div class="cell" data-y="0" data-x="0"></div>
         <div class="cell" data-y="0" data-x="1"></div>
@@ -27,7 +34,9 @@
     </div>
 
     <div id="message"></div>
-    <button id="restart">Restart Game</button>
-<script src="app.js"></script>
+    <button id="restart" style="display: none;">Restart Game</button>
+    <button id="home" style="display: none;">Home</button>
+
+    <script src="app.js"></script>
 </body>
 </html>

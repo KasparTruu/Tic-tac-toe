@@ -4,12 +4,17 @@ const restartButton = document.getElementById('restart');
 const playerChoice = document.getElementById('player-choice');
 const chooseXButton = document.getElementById('choose-x');
 const chooseOButton = document.getElementById('choose-o');
+const gameModeSelection = document.getElementById('game-mode-selection');
+const pvpButton = document.getElementById('pvp');
+const pvbButton = document.getElementById('pvb');
 const gameBoard = document.querySelector('.game-board');
+const homeButton = document.getElementById('home');
 
 let currentPlayer = 'X';
 let playerSymbol = 'X';
 let botSymbol = 'O';
 let gameActive = true;
+let gameMode = 'PvP';  // Default to Player vs Player
 const gameState = Array(9).fill(null);
 
 const baseWinningConditions = [
@@ -27,23 +32,22 @@ let winningConditions = [];
 
 function shuffleConditions() {
     winningConditions = [...baseWinningConditions].sort(() => Math.random() - 0.5);
-    console.log('Winning conditions shuffled:', winningConditions);
 }
 
 function handleCellClick(event) {
+    if (!gameActive) return; // If the game is over, prevent further moves.
+
     const cell = event.target;
     const y = parseInt(cell.dataset.y);
     const x = parseInt(cell.dataset.x);
     const index = y * 3 + x;
 
-    if (gameState[index] || !gameActive) return;
-
-    console.log(`Player ${currentPlayer} clicked cell (${x}, ${y})`);
+    if (gameState[index]) return; // Ignore click if the cell is already taken.
 
     gameState[index] = currentPlayer;
     cell.textContent = currentPlayer;
     cell.classList.add('taken');
-    currentPlayer === 'X' ? cell.classList.add('x') : cell.classList.add('o');
+    console.log(`Player ${currentPlayer} clicked on cell (${y}, ${x})`);
 
     if (checkWin()) {
         message.textContent = `Player ${currentPlayer} wins!`;
@@ -53,74 +57,54 @@ function handleCellClick(event) {
         message.textContent = "It's a draw!";
         console.log("It's a draw!");
         gameActive = false;
-    }
+    } else {
+        currentPlayer = currentPlayer === playerSymbol ? botSymbol : playerSymbol;
+        message.textContent = `Player ${currentPlayer}'s turn`;
 
-    currentPlayer = currentPlayer === playerSymbol ? botSymbol : playerSymbol;
-    message.textContent = `Player ${currentPlayer}'s turn`;
-
-    if (currentPlayer === botSymbol) {
-        console.log('Bot is making a move...');
-        botMove();
+        if (gameMode === 'PvB' && currentPlayer === botSymbol) {
+            setTimeout(() => botMove(), 500);  // Let bot play after player moves
+        }
     }
 }
 
 function checkWin(board = gameState) {
-    return winningConditions.reduce((winner, condition) => {
+    return winningConditions.some(condition => {
         const [a, b, c] = condition;
-        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-            winner = board[a]; // Return the symbol of the winning player
-        }
-        return winner;
-    }, null);
-}
-
-function minimax(board, depth, isMaximizing) {
-    const winner = checkWin(board);
-    if (winner === playerSymbol) return 10 - depth; // Favor player
-    if (winner === botSymbol) return depth - 10; // Favor bot
-    if (board.every(cell => cell !== null)) return 0; // Draw
-
-    return board.reduce((bestScore, _, index) => {
-        if (board[index] === null) {
-            board[index] = isMaximizing ? botSymbol : playerSymbol;
-            const score = minimax(board, depth + 1, !isMaximizing);
-            board[index] = null;
-
-            return isMaximizing
-                ? Math.max(bestScore, score)
-                : Math.min(bestScore, score);
-        }
-        return bestScore;
-    }, isMaximizing ? -Infinity : Infinity);
-}
-
-function bestMove() {
-    let bestMove = -1;
-    let bestValue = -Infinity;
-
-    gameState.forEach((cell, index) => {
-        if (cell === null) {
-            gameState[index] = botSymbol;
-            const moveValue = minimax(gameState, 0, false);
-            gameState[index] = null;
-
-            if (moveValue > bestValue) {
-                bestValue = moveValue;
-                bestMove = index;
-            }
-        }
+        return board[a] && board[a] === board[b] && board[a] === board[c];
     });
+}
 
-    console.log(`Bot chose cell index: ${bestMove}`);
-    return bestMove;
+function getBlockMove() {
+    for (let condition of winningConditions) {
+        const [a, b, c] = condition;
+        const cellsInCondition = [gameState[a], gameState[b], gameState[c]];
+        if (cellsInCondition.filter(cell => cell === playerSymbol).length === 2 && cellsInCondition.includes(null)) {
+            return condition.find(index => gameState[index] === null);
+        }
+    }
+    return null;
+}
+
+function getRandomMove() {
+    const availableCells = gameState.map((value, index) => value === null ? index : null).filter(index => index !== null);
+    return availableCells[Math.floor(Math.random() * availableCells.length)];
 }
 
 function botMove() {
-    const move = bestMove();
+    if (!gameActive) return;
+
+    console.log('Bot is making its move...');
+
+    let move = getBlockMove();
+    if (move === null) {
+        move = getRandomMove();
+    }
+
     gameState[move] = botSymbol;
     const botCell = cells[move];
     botCell.textContent = botSymbol;
     botCell.classList.add('taken');
+    console.log(`Bot clicked on cell (${Math.floor(move / 3)}, ${move % 3})`);
 
     if (checkWin()) {
         message.textContent = `Player ${botSymbol} wins!`;
@@ -153,12 +137,13 @@ function initializeGame() {
     shuffleConditions();
     message.textContent = `Player ${currentPlayer}'s turn`;
 
-    // Randomly decide if the bot starts
-    if (Math.random() < 0.5) {
+    console.log('Game initialized.');
+
+    if (gameMode === 'PvB' && Math.random() < 0.5) {
         currentPlayer = botSymbol;
         message.textContent = `Player ${currentPlayer}'s turn`;
-        console.log('Bot starts the game!');
-        botMove();
+        console.log('Bot starts the game...');
+        setTimeout(() => botMove(), 500);  // Let bot start immediately
     }
 }
 
@@ -166,14 +151,49 @@ function startGame(symbol) {
     playerSymbol = symbol;
     botSymbol = symbol === 'X' ? 'O' : 'X';
     playerChoice.style.display = 'none';
+    gameModeSelection.style.display = 'none';
     gameBoard.style.display = 'grid';
     restartButton.style.display = 'inline-block';
-    console.log(`Game started! Player chose ${playerSymbol}, Bot is ${botSymbol}`);
+    homeButton.style.display = 'inline-block';
+    console.log(`Starting game with ${playerSymbol} as player and ${botSymbol} as bot.`);
     initializeGame();
 }
 
-chooseXButton.addEventListener('click', () => startGame('X'));
-chooseOButton.addEventListener('click', () => startGame('O'));
-restartButton.addEventListener('click', initializeGame);
+function resetToHome() {
+    playerChoice.style.display = 'block';
+    gameModeSelection.style.display = 'block';
+    gameBoard.style.display = 'none';
+    restartButton.style.display = 'none';
+    homeButton.style.display = 'none';
+    message.textContent = '';
+    console.log('Resetting to home screen.');
+}
 
-shuffleConditions();
+chooseXButton.addEventListener('click', () => {
+    gameModeSelection.style.display = 'block';
+    playerSymbol = 'X';
+    botSymbol = 'O';
+    playerChoice.style.display = 'none';
+});
+
+chooseOButton.addEventListener('click', () => {
+    gameModeSelection.style.display = 'block';
+    playerSymbol = 'O';
+    botSymbol = 'X';
+    playerChoice.style.display = 'none';
+});
+
+pvpButton.addEventListener('click', () => {
+    gameMode = 'PvP';
+    console.log('Player vs Player mode selected');
+    startGame(playerSymbol);
+});
+
+pvbButton.addEventListener('click', () => {
+    gameMode = 'PvB';
+    console.log('Player vs Bot mode selected');
+    startGame(playerSymbol);
+});
+
+restartButton.addEventListener('click', initializeGame);
+homeButton.addEventListener('click', resetToHome);

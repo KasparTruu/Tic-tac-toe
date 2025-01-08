@@ -31,20 +31,6 @@ div.game-board {
     cursor: not-allowed;
 }
 
-/* Style for X */
-.cell.x {
-    color: #ff4d4d;  /* Red color for X */
-    font-weight: bold;
-    text-shadow: 2px 2px 5px rgba(255, 0, 0, 0.5);  /* Adding a red glow effect */
-}
-
-/* Style for O */
-.cell.o {
-    color: #4d94ff;  /* Blue color for O */
-    font-weight: bold;
-    text-shadow: 2px 2px 5px rgba(0, 0, 255, 0.5);  /* Adding a blue glow effect */
-}
-
 #message {
     margin-top: 20px;
     font-size: 1.2rem;
